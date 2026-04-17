@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PredictEdu — Admin Access</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=Exo+2:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#030810;--panel:#081220;--panel2:#0c1a2e;
+  --wire:#0e2540;--plasma:#05d9e8;--plasma2:#ff2a6d;--plasma3:#d300c5;
+  --txt:#c8e0f4;--txt2:#5a86a8;--txt3:#243c55;
+  --font-hd:'Syne',sans-serif;--font-mono:'Space Mono',monospace;--font-body:'Exo 2',sans-serif;
+}
+body{font-family:var(--font-body);background:var(--ink);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;cursor:none}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(5,217,232,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(5,217,232,.02) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(211,0,197,.05),transparent 70%);pointer-events:none}
+
+#cx-outer{position:fixed;width:28px;height:28px;border:1.5px solid var(--plasma3);border-radius:2px;pointer-events:none;z-index:99999;transform:translate(-50%,-50%) rotate(45deg);transition:width .2s,height .2s}
+#cx-inner{position:fixed;width:5px;height:5px;background:var(--plasma3);border-radius:1px;pointer-events:none;z-index:100000;transform:translate(-50%,-50%) rotate(45deg);box-shadow:0 0 10px var(--plasma3)}
+
+/* Page wipe */
+#wipe{position:fixed;inset:0;z-index:99990;pointer-events:none;background:var(--ink);clip-path:inset(0 0% 0 0);animation:wipe-in .44s cubic-bezier(.77,0,.18,1) forwards}
+@keyframes wipe-in{0%{clip-path:inset(0 0% 0 0);opacity:1}100%{clip-path:inset(0 100% 0 0);opacity:0}}
+#wipe.out{animation:wipe-out .3s cubic-bezier(.77,0,.18,1) forwards;pointer-events:all}
+@keyframes wipe-out{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0% 0 0)}}
+
+.box{
+  background:var(--panel);border:1px solid var(--wire);border-radius:12px;
+  padding:2.5rem;width:100%;max-width:390px;
+  box-shadow:0 0 60px rgba(0,0,0,.7),0 0 40px rgba(211,0,197,.06);
+  animation:boxIn .48s cubic-bezier(.22,1,.36,1) both;
+  position:relative;z-index:1;
+}
+@keyframes boxIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.box::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--plasma3),var(--plasma),transparent);border-radius:12px 12px 0 0}
+
+.lock-wrap{text-align:center;margin-bottom:1.75rem}
+.lock-ico{font-size:2.6rem;display:inline-block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.eyebrow{font-size:.65rem;color:var(--plasma3);letter-spacing:.16em;text-align:center;margin-bottom:.6rem;text-transform:uppercase;font-family:var(--font-mono)}
+h1{font-family:var(--font-hd);font-size:1.05rem;font-weight:800;color:#fff;text-align:center;margin-bottom:.28rem;letter-spacing:.08em}
+.sub{font-size:.74rem;color:var(--txt3);text-align:center;margin-bottom:2rem;font-family:var(--font-mono)}
+
+label{display:block;font-size:.74rem;color:var(--txt2);margin-bottom:.38rem;letter-spacing:.06em;font-family:var(--font-mono)}
+input[type=password]{
+  width:100%;padding:.68rem 1rem;border:1px solid var(--wire);border-radius:5px;
+  background:var(--panel2);color:var(--txt);font-family:var(--font-mono);
+  font-size:.9rem;outline:none;transition:all .2s;cursor:none;letter-spacing:.08em;
+}
+input[type=password]:focus{border-color:var(--plasma3);box-shadow:0 0 0 2px rgba(211,0,197,.12);background:rgba(211,0,197,.04)}
+input[type=password]::placeholder{color:var(--txt3);letter-spacing:0}
+
+.err-box{
+  background:rgba(255,42,109,.07);border:1px solid rgba(255,42,109,.25);
+  border-radius:5px;padding:.55rem .95rem;margin-bottom:.9rem;
+  font-size:.74rem;color:var(--plasma2);display:flex;align-items:center;gap:8px;font-family:var(--font-mono);
+}
+.btn{
+  width:100%;padding:.78rem;margin-top:1.2rem;
+  background:rgba(211,0,197,.1);color:#e879f9;
+  border:1px solid rgba(211,0,197,.38);border-radius:5px;
+  font-family:var(--font-hd);font-size:.8rem;font-weight:700;
+  cursor:none;letter-spacing:.08em;transition:all .25s;
+}
+.btn:hover{background:rgba(211,0,197,.2);box-shadow:0 0 20px rgba(211,0,197,.22);transform:translateY(-1px)}
+.back-link{display:block;text-align:center;margin-top:1.2rem;font-size:.7rem;color:var(--txt3);text-decoration:none;transition:color .2s;cursor:none;font-family:var(--font-mono)}
+.back-link:hover{color:var(--plasma)}
+.hint{margin-top:1.4rem;padding:.55rem .82rem;background:rgba(5,217,232,.04);border:1px solid rgba(5,217,232,.1);border-radius:4px;font-size:.66rem;color:var(--txt3);text-align:center;font-family:var(--font-mono)}
+</style>
+</head>
+<body>
+<div id="wipe"></div>
+<div id="cx-outer"></div><div id="cx-inner"></div>
+
+<div class="box">
+  <div class="lock-wrap"><span class="lock-ico">⬡</span></div>
+  <div class="eyebrow">// ADMIN_ACCESS_PORTAL</div>
+  <h1>ADMIN PANEL</h1>
+  <p class="sub">PredictEdu — Permanent Record Store</p>
+
+  {% if error %}
+  <div class="err-box">✕ &nbsp;{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="/admin/login">
+    <div style="margin-bottom:1rem">
+      <label>ADMIN_PASSWORD</label>
+      <input type="password" name="password" placeholder="Enter password…" autofocus required/>
+    </div>
+    <button class="btn" type="submit">→ AUTHENTICATE</button>
+  </form>
+  <a class="back-link" id="back-link" href="/">← RETURN_TO_APP</a>
+</div>
+
+<script>
+const cx=document.getElementById('cx-outer'),ci=document.getElementById('cx-inner');
+let tx=0,ty=0;
+document.addEventListener('mousemove',e=>{ci.style.left=e.clientX+'px';ci.style.top=e.clientY+'px';tx+=(e.clientX-tx)*.2;ty+=(e.clientY-ty)*.2;cx.style.left=tx+'px';cx.style.top=ty+'px';});
+(function a(){tx+=(parseFloat(ci.style.left||0)-tx)*.18;ty+=(parseFloat(ci.style.top||0)-ty)*.18;cx.style.left=tx+'px';cx.style.top=ty+'px';requestAnimationFrame(a);})();
+document.getElementById('back-link').addEventListener('click',function(e){
+  e.preventDefault();const href=this.href;
+  const w=document.getElementById('wipe');w.className='out';
+  setTimeout(()=>window.location.href=href,320);
+});
+</script>
+</body>
+</html>

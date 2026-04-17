@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PredictEdu — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#03060e;--ink2:#05090f;--ink3:#080d16;
+  --panel:#081218;--panel2:#0b1822;
+  --wire:#0c2035;--wire2:#06131e;
+  --plasma:#05d9e8;--plasma2:#ff2a6d;--plasma3:#d300c5;--plasma4:#01ffc3;
+  --amber:#ffa800;--caution:#ff6b35;
+  --adm:#f97316;--adm2:#ea580c;
+  --txt:#c8e0f4;--txt2:#4e7a9c;--txt3:#1e3d55;
+  --font-hd:'Syne',sans-serif;--font-mono:'Space Mono',monospace;--font-body:'Exo 2',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--ink);color:var(--txt);min-height:100vh;cursor:none;font-size:15px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 75% 45% at 50% 0%,rgba(249,115,22,.03),transparent 60%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(249,115,22,.01) 1px,transparent 1px),linear-gradient(90deg,rgba(249,115,22,.01) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+/* Page wipe */
+#wipe{position:fixed;inset:0;z-index:99990;pointer-events:none;background:var(--ink);clip-path:inset(0 0% 0 0);animation:wa .44s cubic-bezier(.77,0,.18,1) forwards}
+@keyframes wa{0%{clip-path:inset(0 0% 0 0);opacity:1}100%{clip-path:inset(0 100% 0 0);opacity:0}}
+#wipe.out{animation:wo .3s cubic-bezier(.77,0,.18,1) forwards;pointer-events:all}
+@keyframes wo{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0% 0 0)}}
+
+/* Cursor */
+#cx{position:fixed;width:30px;height:30px;border:1.5px solid var(--adm);border-radius:2px;pointer-events:none;z-index:99999;transform:translate(-50%,-50%) rotate(45deg);transition:width .2s,height .2s,border-color .2s}
+#ci{position:fixed;width:5px;height:5px;background:var(--adm);border-radius:1px;pointer-events:none;z-index:100000;transform:translate(-50%,-50%) rotate(45deg);box-shadow:0 0 10px var(--adm)}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:500;background:rgba(3,6,14,.96);backdrop-filter:blur(22px);border-bottom:1px solid var(--wire);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:58px}
+.tb-left{display:flex;align-items:center;gap:14px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:.32rem .82rem;border:1px solid var(--wire);background:transparent;color:var(--txt2);border-radius:4px;font-family:var(--font-mono);font-size:.7rem;cursor:none;text-decoration:none;transition:all .2s}
+.back-btn:hover{border-color:var(--plasma);color:var(--plasma)}
+.adm-badge{font-family:var(--font-hd);font-size:.95rem;font-weight:800;color:var(--adm);text-shadow:0 0 14px rgba(249,115,22,.5);letter-spacing:.06em}
+.adm-sub{font-family:var(--font-mono);font-size:.6rem;color:var(--txt3);letter-spacing:.07em}
+.tb-right{display:flex;align-items:center;gap:.7rem}
+.rec-ind{font-family:var(--font-mono);font-size:.7rem;color:var(--plasma4);background:rgba(1,255,195,.06);border:1px solid rgba(1,255,195,.2);border-radius:4px;padding:.28rem .78rem;letter-spacing:.04em}
+.logout-btn{display:flex;align-items:center;gap:6px;padding:.32rem .82rem;border:1px solid rgba(255,42,109,.3);background:rgba(255,42,109,.06);color:var(--plasma2);border-radius:4px;font-family:var(--font-mono);font-size:.7rem;cursor:none;text-decoration:none;transition:all .2s}
+.logout-btn:hover{background:rgba(255,42,109,.14)}
+
+/* Layout */
+.wrap{max-width:1320px;margin:0 auto;padding:2.5rem 2rem;position:relative;z-index:1}
+.ph{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--wire);position:relative}
+.ph::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:1px;background:linear-gradient(90deg,var(--adm),transparent)}
+.ph h1{font-family:var(--font-hd);font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:.04em}
+.ph p{font-size:.82rem;color:var(--txt2);margin-top:.3rem;font-family:var(--font-mono)}
+.ph-note{display:inline-flex;align-items:center;gap:7px;margin-top:.7rem;padding:.28rem .82rem;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:3px;font-size:.68rem;color:var(--adm);font-family:var(--font-mono);letter-spacing:.04em}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1.8rem}
+.kpi{background:var(--panel);border:1px solid var(--wire);border-radius:7px;padding:1.2rem;position:relative;overflow:hidden;transition:transform .2s;cursor:default}
+.kpi:hover{transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.kpi.a1::before{background:var(--adm)}
+.kpi.a2::before{background:var(--plasma)}
+.kpi.a3::before{background:var(--plasma4)}
+.kpi.a4::before{background:var(--plasma2)}
+.kpi.a5::before{background:var(--plasma3)}
+.kpi-ico{font-size:1rem;margin-bottom:.4rem;opacity:.65}
+.kpi-v{font-family:var(--font-hd);font-size:1.55rem;font-weight:800;color:#fff;line-height:1}
+.kpi-l{font-size:.56rem;color:var(--txt3);margin-top:.22rem;font-family:var(--font-mono);letter-spacing:.07em;text-transform:uppercase}
+
+/* Charts */
+.charts-row{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:.9rem;margin-bottom:1.8rem}
+.card{background:var(--panel);border:1px solid var(--wire);border-radius:7px;padding:1.4rem}
+.ct{font-family:var(--font-hd);font-size:.66rem;font-weight:700;color:#fff;margin-bottom:1rem;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.ct .badge{font-size:.52rem;color:var(--adm);background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.22);border-radius:3px;padding:.07rem .36rem;margin-left:auto;font-family:var(--font-mono)}
+
+.bars{display:flex;align-items:flex-end;gap:5px;height:96px}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bv{font-size:.58rem;font-weight:700;color:#fff;font-family:var(--font-mono)}
+.bb{width:100%;border-radius:2px 2px 0 0;min-height:3px}
+.bl{font-size:.52rem;color:var(--txt3);font-family:var(--font-mono);text-align:center}
+
+.donut-wrap{display:flex;align-items:center;gap:.9rem}
+.d-svg{width:88px;height:88px;flex-shrink:0}
+.d-leg{display:flex;flex-direction:column;gap:.35rem;flex:1}
+.d-row{display:flex;align-items:center;gap:.38rem}
+.d-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0}
+.d-nm{flex:1;color:var(--txt2);font-family:var(--font-mono);font-size:.62rem}
+.d-cnt{font-weight:700;font-family:var(--font-mono);font-size:.65rem}
+
+.dept-list{display:flex;flex-direction:column;gap:.55rem}
+.dept-row{display:flex;align-items:center;gap:.55rem}
+.dept-nm{min-width:92px;font-size:.64rem;color:var(--txt);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dept-tr{flex:1;height:3.5px;background:var(--panel2);border-radius:999px;overflow:hidden}
+.dept-fl{height:100%;border-radius:999px;transition:width 1s ease}
+.dept-vl{font-size:.64rem;font-weight:700;font-family:var(--font-mono);min-width:30px;text-align:right}
+
+/* Table */
+.table-sec{background:var(--panel);border:1px solid var(--wire);border-radius:7px;overflow:hidden}
+.th-row{padding:1.2rem 1.5rem;border-bottom:1px solid var(--wire);display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.th-row h2{font-family:var(--font-hd);font-size:.76rem;font-weight:700;color:#fff;letter-spacing:.06em;flex:1}
+.tbtn{display:inline-flex;align-items:center;gap:6px;padding:.35rem .85rem;border-radius:4px;font-size:.68rem;font-weight:700;cursor:none;border:none;font-family:var(--font-mono);transition:all .2s;letter-spacing:.03em}
+.tb-exp{background:rgba(1,255,195,.08);color:var(--plasma4);border:1px solid rgba(1,255,195,.22)}
+.tb-exp:hover{background:rgba(1,255,195,.15)}
+.srch{display:flex;align-items:center;gap:6px;background:var(--ink3);border:1px solid var(--wire);border-radius:4px;padding:.28rem .72rem;transition:border-color .2s}
+.srch:focus-within{border-color:var(--adm)}
+.srch input{border:none;outline:none;background:transparent;font-family:var(--font-mono);color:var(--txt);width:145px;font-size:.72rem;cursor:none}
+.srch input::placeholder{color:var(--txt3)}
+.fil{display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--txt2);font-family:var(--font-mono)}
+.fil select{background:var(--ink3);border:1px solid var(--wire);color:var(--txt);border-radius:3px;padding:.22rem .5rem;font-family:var(--font-mono);font-size:.68rem;cursor:none;outline:none}
+.fil select:focus{border-color:var(--adm)}
+.fil select option{background:var(--ink3)}
+.tbl-wrap{overflow-x:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;font-size:.7rem}
+thead tr{background:var(--ink2);position:sticky;top:0;z-index:10}
+th{padding:.5rem .88rem;text-align:left;white-space:nowrap;font-size:.58rem;letter-spacing:.07em;color:var(--txt2);font-family:var(--font-mono);border-bottom:1px solid var(--wire)}
+tbody tr{border-bottom:1px solid var(--wire2);transition:background .12s;animation:rf .3s ease both}
+@keyframes rf{from{opacity:0}to{opacity:1}}
+tbody tr:hover{background:rgba(249,115,22,.025)}
+td{padding:.48rem .88rem;vertical-align:middle;font-family:var(--font-mono);color:var(--txt)}
+.g-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-weight:800;font-size:.7rem;font-family:var(--font-hd)}
+.empty-state{text-align:center;padding:3.5rem 1rem;color:var(--txt3);font-family:var(--font-mono);font-size:.76rem}
+
+/* Toast */
+#toast{display:none;position:fixed;bottom:1.75rem;right:1.75rem;background:var(--panel);border:1px solid var(--wire);color:var(--txt);padding:.55rem 1rem;border-radius:6px;font-size:.72rem;font-weight:600;align-items:center;gap:8px;z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.5);font-family:var(--font-mono);animation:su .3s ease}
+@keyframes su{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.charts-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="wipe"></div>
+<div id="cx"></div><div id="ci"></div>
+
+<div class="topbar">
+  <div class="tb-left">
+    <a class="back-btn" id="back-btn" href="/">← APP</a>
+    <div>
+      <div class="adm-badge">⬡ ADMIN PANEL</div>
+      <div class="adm-sub">// PERMANENT_RECORD_STORE — ALL_TIME</div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="rec-ind" id="rec-ind">⏳ LOADING…</div>
+    <a class="logout-btn" href="/admin/logout">⬡ LOGOUT</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="ph">
+    <h1>All-Time Student Records</h1>
+    <p>Every prediction ever submitted — permanent, never deleted by user actions.</p>
+    <div class="ph-note">🔒 ADMIN_ONLY — Append-only, unaffected by session clears</div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi a1"><div class="kpi-ico">📋</div><div class="kpi-v" id="k-total">—</div><div class="kpi-l">TOTAL_ALL_TIME</div></div>
+    <div class="kpi a2"><div class="kpi-ico">📊</div><div class="kpi-v" id="k-avg">—</div><div class="kpi-l">AVG_SCORE</div></div>
+    <div class="kpi a3"><div class="kpi-ico">🏆</div><div class="kpi-v" id="k-exc">—</div><div class="kpi-l">EXCELLENT_(A)</div></div>
+    <div class="kpi a4"><div class="kpi-ico">⚠</div><div class="kpi-v" id="k-risk">—</div><div class="kpi-l">AT_RISK_(D/F)</div></div>
+    <div class="kpi a5"><div class="kpi-ico">🎓</div><div class="kpi-v" id="k-depts">—</div><div class="kpi-l">DEPARTMENTS</div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-row">
+    <div class="card">
+      <div class="ct">⬡ SCORE_DISTRIBUTION <span class="badge">ALL_TIME</span></div>
+      <div class="bars" id="score-bars"></div>
+    </div>
+    <div class="card">
+      <div class="ct">⬡ GRADE_BREAKDOWN <span class="badge">DONUT</span></div>
+      <div class="donut-wrap">
+        <svg class="d-svg" viewBox="0 0 100 100" id="donut-svg"></svg>
+        <div class="d-leg" id="donut-leg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">⬡ TOP_DEPARTMENTS <span class="badge">AVG</span></div>
+      <div class="dept-list" id="dept-list"></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-sec">
+    <div class="th-row">
+      <h2>⬡ ALL_RECORDS — PERMANENT LOG</h2>
+      <button class="tbtn tb-exp" onclick="exportCSV()">⬇ EXPORT_CSV</button>
+      <div class="srch">
+        <span style="color:var(--txt3);font-size:.68rem;font-family:var(--font-mono)">⌕</span>
+        <input type="text" id="srch-inp" placeholder="Filter by name…" oninput="renderTable()"/>
+      </div>
+      <div class="fil">
+        GRADE:
+        <select id="grade-filter" onchange="renderTable()">
+          <option value="">ALL</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option><option>F</option>
+        </select>
+      </div>
+      <div class="fil">
+        DEPT:
+        <select id="dept-filter" onchange="renderTable()">
+          <option value="">ALL</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>TIMESTAMP</th><th>NAME</th><th>GENDER</th><th>AGE</th><th>DEPT</th>
+            <th>ATT%</th><th>STUDY_H</th><th>PREV%</th><th>ASSIGN%</th><th>SUBJ%</th>
+            <th>SLEEP</th><th>EXTRA</th><th>PARENT_EDU</th>
+            <th>INTERESTS</th><th>EVENTS</th>
+            <th>SCORE%</th><th>GRADE</th><th>LEVEL</th>
+          </tr>
+        </thead>
+        <tbody id="rec-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// Cursor
+const cx=document.getElementById('cx'),ci=document.getElementById('ci');
+let tx=0,ty=0;
+document.addEventListener('mousemove',e=>{ci.style.left=e.clientX+'px';ci.style.top=e.clientY+'px';tx+=(e.clientX-tx)*.18;ty+=(e.clientY-ty)*.18;cx.style.left=tx+'px';cx.style.top=ty+'px';});
+(function a(){tx+=(parseFloat(ci.style.left||0)-tx)*.16;ty+=(parseFloat(ci.style.top||0)-ty)*.16;cx.style.left=tx+'px';cx.style.top=ty+'px';requestAnimationFrame(a);})();
+
+// Page wipe on back
+document.getElementById('back-btn').addEventListener('click',function(e){
+  e.preventDefault();const href=this.href;
+  const w=document.getElementById('wipe');w.className='out';
+  setTimeout(()=>window.location.href=href,320);
+});
+
+const GC={A:'#01ffc3',B:'#05d9e8',C:'#ffa800',D:'#ff6b35',F:'#ff2a6d'};
+let allRows=[];
+
+async function loadData(){
+  try{
+    const data=await(await fetch('/admin/records')).json();
+    allRows=data;
+    document.getElementById('rec-ind').textContent=`📋 ${data.length}_RECORDS`;
+    populateDeptFilter();
+    renderKPIs();renderCharts();renderTable();
+  }catch(e){document.getElementById('rec-ind').textContent='❌ LOAD_ERROR';}
+}
+
+function populateDeptFilter(){
+  const depts=[...new Set(allRows.map(r=>r['Department']).filter(Boolean))].sort();
+  const sel=document.getElementById('dept-filter');
+  depts.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+}
+
+function renderKPIs(){
+  const n=allRows.length;
+  document.getElementById('k-total').textContent=n||'0';
+  if(!n){['k-avg','k-exc','k-risk','k-depts'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  const avg=Math.round(allRows.reduce((s,r)=>s+(parseInt(r['Predicted Score(%)'])||0),0)/n);
+  document.getElementById('k-avg').textContent=avg+'%';
+  document.getElementById('k-exc').textContent=allRows.filter(r=>r['Grade']==='A').length;
+  document.getElementById('k-risk').textContent=allRows.filter(r=>r['Grade']==='D'||r['Grade']==='F').length;
+  document.getElementById('k-depts').textContent=new Set(allRows.map(r=>r['Department']).filter(Boolean)).size;
+}
+
+function renderCharts(){
+  const n=allRows.length;if(!n)return;
+  const bins=[{l:'0–20',mn:0,mx:20},{l:'21–40',mn:21,mx:40},{l:'41–60',mn:41,mx:60},{l:'61–80',mn:61,mx:80},{l:'81–100',mn:81,mx:100}];
+  const bc=['#ff2a6d','#ff6b35','#ffa800','#05d9e8','#01ffc3'];
+  const cnts=bins.map(b=>allRows.filter(r=>{const s=parseInt(r['Predicted Score(%)'])||0;return s>=b.mn&&s<=b.mx;}).length);
+  const mb=Math.max(...cnts,1);
+  document.getElementById('score-bars').innerHTML=cnts.map((c,i)=>`<div class="bc"><div class="bv">${c}</div><div class="bb" style="height:${(c/mb)*88}px;background:${bc[i]};box-shadow:0 0 7px ${bc[i]}55"></div><div class="bl">${bins[i].l}</div></div>`).join('');
+
+  const grades=['A','B','C','D','F'];const gc={};
+  allRows.forEach(r=>gc[r['Grade']]=(gc[r['Grade']]||0)+1);
+  const r=40,ccx=50,ccy=50,circ=2*Math.PI*r;let off=0,paths='',leg=[];
+  grades.forEach(g=>{const cnt=gc[g]||0;if(!cnt)return;const fr=cnt/n,dash=fr*circ;paths+=`<circle cx="${ccx}" cy="${ccy}" r="${r}" fill="none" stroke="${GC[g]}" stroke-width="16" stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${-off}" transform="rotate(-90,${ccx},${ccy})" style="filter:drop-shadow(0 0 4px ${GC[g]})"/>`;off+=dash;leg.push({g,cnt,c:GC[g]});});
+  document.getElementById('donut-svg').innerHTML=paths;
+  document.getElementById('donut-leg').innerHTML=leg.map(({g,cnt,c})=>`<div class="d-row"><div class="d-dot" style="background:${c};box-shadow:0 0 4px ${c}"></div><span class="d-nm">GRADE_${g}</span><span class="d-cnt" style="color:${c}">${cnt}</span></div>`).join('');
+
+  const dm={};allRows.forEach(r=>{const d=r['Department'];if(!d)return;if(!dm[d])dm[d]={s:0,c:0};dm[d].s+=(parseInt(r['Predicted Score(%)'])||0);dm[d].c++;});
+  const da=Object.entries(dm).map(([d,v])=>({d,avg:Math.round(v.s/v.c)})).sort((a,b)=>b.avg-a.avg).slice(0,6);
+  const dc=['#05d9e8','#ff2a6d','#d300c5','#01ffc3','#ffa800','#ff6b35'];
+  document.getElementById('dept-list').innerHTML=da.map((d,i)=>`<div class="dept-row"><div class="dept-nm">${d.d}</div><div class="dept-tr"><div class="dept-fl" style="width:${d.avg}%;background:${dc[i%dc.length]};box-shadow:0 0 5px ${dc[i%dc.length]}44"></div></div><div class="dept-vl" style="color:${dc[i%dc.length]}">${d.avg}%</div></div>`).join('')||'<div style="color:var(--txt3);font-family:var(--font-mono);font-size:.72rem">// NO DATA</div>';
+}
+
+function renderTable(){
+  const q=(document.getElementById('srch-inp')?.value||'').toLowerCase();
+  const gf=document.getElementById('grade-filter')?.value||'';
+  const df=document.getElementById('dept-filter')?.value||'';
+  const filtered=allRows.filter(r=>{
+    if(q&&!(r['Name']||'').toLowerCase().includes(q))return false;
+    if(gf&&r['Grade']!==gf)return false;
+    if(df&&r['Department']!==df)return false;
+    return true;
+  });
+  const tbody=document.getElementById('rec-tbody');
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="19" class="empty-state">// NO_RECORDS_MATCH_FILTER</td></tr>`;return;}
+  tbody.innerHTML=[...filtered].reverse().map((r,i)=>{
+    const c=GC[r['Grade']]||'#64748b';const s=r['Predicted Score(%)'];
+    return`<tr>
+      <td style="color:var(--txt3);font-size:.58rem">${filtered.length-i}</td>
+      <td style="font-size:.6rem;color:var(--txt3)">${r['Timestamp']||'—'}</td>
+      <td style="color:#fff;font-weight:700">${r['Name']||'—'}</td>
+      <td>${r['Gender']||'—'}</td>
+      <td style="text-align:center">${r['Age']||'—'}</td>
+      <td>${r['Department']||'—'}</td>
+      <td style="text-align:center">${r['Attendance(%)']||'—'}</td>
+      <td style="text-align:center">${r['Study Hours/Day']||'—'}</td>
+      <td style="text-align:center">${r['Prev Score(%)']||'—'}</td>
+      <td style="text-align:center">${r['Assignments(%)']||'—'}</td>
+      <td style="text-align:center;color:var(--plasma)">${r['Overall Subject %']||'—'}</td>
+      <td>${r['Sleep']||'—'}</td>
+      <td>${r['Extracurricular']||'—'}</td>
+      <td>${r['Parental Education']||'—'}</td>
+      <td style="font-size:.62rem;color:var(--txt2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['Interests']||'—'}</td>
+      <td style="font-size:.62rem;color:var(--txt2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['Suggested Events']||'—'}</td>
+      <td style="text-align:center"><strong style="color:${c}">${s||'—'}</strong></td>
+      <td style="text-align:center"><span class="g-badge" style="background:${c}18;color:${c};border:1px solid ${c}44">${r['Grade']||'—'}</span></td>
+      <td><span style="background:${c}18;color:${c};padding:.1rem .48rem;border-radius:3px;font-size:.6rem;font-weight:700;border:1px solid ${c}44">${r['Performance Level']||'—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function exportCSV(){
+  if(!allRows.length){toast('⚠ No records to export');return;}
+  const headers=Object.keys(allRows[0]);
+  const csv=[headers,...allRows.map(r=>headers.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`))].map(r=>r.join?r.join(','):r).join('\n');
+  const d=new Date();const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`admin_records_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.csv`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  toast('📥 CSV_EXPORTED');
+}
+
+let tTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='flex';clearTimeout(tTimer);tTimer=setTimeout(()=>t.style.display='none',3200);}
+
+window.addEventListener('load',loadData);
+</script>
+</body>
+</html>
